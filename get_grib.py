@@ -7,7 +7,6 @@ c.retrieve(
     'reanalysis-era5-land',
     {
         'area': '41/14/41/14',  # North, West, South, East. Default: global
-        'grid': [1.0, 1.0],
     # Latitude/longitude grid: east-west (longitude) and north-south resolution (latitude). Default: 0.25 x 0.25
 
         'variable': [
@@ -16,10 +15,10 @@ c.retrieve(
         ],
         'year': '2019',
         'month': [
-            '01', '07',
+            '01',
         ],
         'day': [
-            '01'
+            '01','02'
         ],
         'time': [
             '00:00', '01:00', '02:00',
