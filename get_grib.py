@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import cdsapi
 
 c = cdsapi.Client()
@@ -7,18 +6,18 @@ c.retrieve(
     'reanalysis-era5-land',
     {
         'area': '41/14/41/14',  # North, West, South, East. Default: global
-    # Latitude/longitude grid: east-west (longitude) and north-south resolution (latitude). Default: 0.25 x 0.25
+         # Latitude/longitude grid: east-west (longitude) and north-south resolution (latitude). Default: 0.25 x 0.25
 
         'variable': [
-            '2m_temperature', 'forecast_albedo', 'soil_temperature_level_1',
+            '2m_temperature', 'soil_temperature_level_1',
             'surface_net_solar_radiation', 'surface_solar_radiation_downwards',
         ],
         'year': '2019',
         'month': [
-            '01',
+            '02',
         ],
         'day': [
-            '01','02'
+            '01','07'
         ],
         'time': [
             '00:00', '01:00', '02:00',
