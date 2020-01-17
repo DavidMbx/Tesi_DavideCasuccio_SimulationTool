@@ -22,9 +22,9 @@ while 1:
    eccodes.codes_release(gid)
 f.close()
 
-for j in range(0, len(ore), 24):
+for j in range(0, len(valori), 24):
 
- with open('prova'+str(date[j])+' '+str(ore[j+1])+'.csv', 'w', newline='') as file:
+ with open('Caserta_'+str(date[j])+'_'+str(ore[j+1])+'.csv', 'w', newline='') as file:
   writer = csv.writer(file)
   writer.writerow(["time", "2t", "stl1", "ssr", "ssrd"])
   for n in range(j,j+24,4):
