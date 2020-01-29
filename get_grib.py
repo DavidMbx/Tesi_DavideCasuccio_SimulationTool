@@ -12,13 +12,11 @@ c.retrieve(
             '2m_temperature', 'soil_temperature_level_1',
             'surface_net_solar_radiation', 'surface_solar_radiation_downwards',
         ],
-        'year': '2019',
+        'year': ['2016'],
         'month': [
-            '02',
+            '10',
         ],
-        'day': [
-            '01','07'
-        ],
+        'day':[ '06'],
         'time': [
             '00:00', '01:00', '02:00',
             '03:00', '04:00', '05:00',
