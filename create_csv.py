@@ -42,20 +42,20 @@ while 1:
    eccodes.codes_release(gid)
 f.close()
 
-for j in range(0, len(valori), 24):
+for j in range(0, len(valori), 96):
 
- with open('CS_'+str(date[j])+str(ore[j+1])+'.csv', 'w', newline='') as file:
+ with open('KN_'+str(date[j+1])+str(ore[j+1])+'.csv', 'w', newline='') as file:
   writer = csv.writer(file)
   writer.writerow(["time", "aswdifd_s", "aswdir_s", "t_2m", "t_g"])
-  for n in range(j,j+24,4):
+  for n in range(j,j+96,4):
      if len(str(ore[n+1]))==4:
       ore_str=str(ore[n+1])[:2]+':'+str(ore[n+1])[2:]
      elif len(str(ore[n+1]))==1:
-      ore_str=str(ore[n+1])+':00'
+      ore_str=str(ore[n+1])+'0:00'
      else:
       ore_str = '0'+str(ore[n + 1])[:1] + ':' + str(ore[n + 1])[1:]
 
-     writer.writerow([datetime.strptime(str(date[n]), '%Y%m%d').strftime('%d/%m/%Y')+' '+ore_str,valori[n+3],valori[n+2],valori[n],valori[n+1]])
+     writer.writerow([datetime.strptime(str(date[n]), '%Y%m%d').strftime('%Y-%m-%d')+' '+ore_str,valori[n+3],valori[n+2],valori[n],valori[n+1]])
 
 
 print(nomi)

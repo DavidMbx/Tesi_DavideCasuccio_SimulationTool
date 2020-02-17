@@ -5,18 +5,22 @@ c = cdsapi.Client()
 c.retrieve(
     'reanalysis-era5-land',
     {
-        'area': '41/14/41/14',  # North, West, South, East. Default: global
+        'area': '47/9/47/9',  # North, West, South, East. Default: global
          # Latitude/longitude grid: east-west (longitude) and north-south resolution (latitude). Default: 0.25 x 0.25
 
         'variable': [
             '2m_temperature', 'soil_temperature_level_1',
             'surface_net_solar_radiation', 'surface_solar_radiation_downwards',
         ],
-        'year': ['2016'],
+        'year': ['2015'],
         'month': [
             '10',
         ],
-        'day':[ '06'],
+        'day': [
+            '11',
+
+
+        ],
         'time': [
             '00:00', '01:00', '02:00',
             '03:00', '04:00', '05:00',
