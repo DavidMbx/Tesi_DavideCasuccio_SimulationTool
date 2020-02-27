@@ -1,5 +1,7 @@
 import cdsapi
+import os
 
+gen_dir = os.path.dirname(os.path.realpath('__file__'))
 c = cdsapi.Client()
 
 c.retrieve(
@@ -33,4 +35,4 @@ c.retrieve(
         ],
         'format': 'grib',
     },
-    'download.grib')
+    os.path.join(gen_dir,"../GRIB_files/download.grib"))
