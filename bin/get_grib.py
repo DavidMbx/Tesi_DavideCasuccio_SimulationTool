@@ -35,4 +35,4 @@ c.retrieve(
         ],
         'format': 'grib',
     },
-    os.path.join(gen_dir,"../GRIB_files/download.grib"))
+    os.path.join(gen_dir,"../meteorological_data/GRIB_files/download.grib"))

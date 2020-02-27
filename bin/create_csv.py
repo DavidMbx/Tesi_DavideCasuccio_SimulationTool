@@ -4,7 +4,7 @@ from datetime import datetime
 import os
 
 gen_dir = os.path.dirname(os.path.realpath('__file__'))
-f = open(os.path.join(gen_dir,"../GRIB_files/download.grib"))
+f = open(os.path.join(gen_dir,"../meteorological_data/GRIB_files/download.grib"))
 nomi=[]
 date=[]
 ore=[]
@@ -46,7 +46,7 @@ f.close()
 
 for j in range(0, len(valori), 96):
 
- with open(os.path.join(gen_dir,"../simulation_production/")+'KN_'+str(date[j+1])+str(ore[j+1])+'.csv', 'w', newline='') as file:
+ with open(os.path.join(gen_dir,"../meteorological_data/grib2csv_files/")+'KN_'+str(date[j+1])+str(ore[j+1])+'.csv', 'w', newline='') as file:
   writer = csv.writer(file)
   writer.writerow(["time", "aswdifd_s", "aswdir_s", "t_2m", "t_g"])
   for n in range(j,j+96,4):

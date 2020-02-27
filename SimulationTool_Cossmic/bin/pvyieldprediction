@@ -1,0 +1,139 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+"""
+    pvyieldprediction
+    ~~~~~
+    
+    This command line script predicts the yield of photovoltaic systems by the latest 
+    solar irradiance forecast provided in a specified directory
+
+"""
+import logging
+
+from SimulationTool_Cossmic import pvprediction as pv
+
+logger = logging.getLogger('pvyieldprediction')
+
+import os
+import datetime
+
+from configparser import ConfigParser
+
+import numpy as np
+
+
+
+def main(args=None):
+    logger.info('Starting pvyieldprediction')
+    
+    here = os.path.abspath(os.path.dirname(__file__))
+    args = _get_parser().parse_args()
+    
+    if (args.configdir != None):
+        configdir = args.configdir
+        logger.debug('PV system configurations will be read in from "%s"', configdir)
+    else:
+        configdir = os.path.join(os.path.dirname(here), 'conf')
+    
+    settingsfile = os.path.join(configdir, 'settings.cfg')
+    settings = ConfigParser()
+    settings.read(settingsfile)
+    
+    if (args.weatherdir != None):
+        weatherdir = args.weatherdir
+        logger.debug('Weather forecast data will be read in from "%s"', weatherdir)
+    else:
+        weatherdir = str(settings.get('General','datadir'))
+    
+    if not os.path.exists(weatherdir):
+        logger.error('The specified directory "%s" does not exist', weatherdir)
+        quit()
+    
+    try:
+        forecast = pv.weather.forecast(datetime.datetime.now(), settings.get('Location','timezone'), 
+                                       var=weatherdir, method='DWD_CSV')
+        if not forecast.empty:
+            systems = pv.system.read(configdir)
+            
+            if args.optimize:
+                _optimize(forecast.index, systems, settings, weatherdir)
+                
+            yieldprediction = pv.predict.energy(systems, forecast)
+            
+            if yieldprediction.empty:
+                logger.error('PV yield prediction returned empty')
+            else:
+                if (args.simdir != None):
+                    simdir = args.simdir
+                    logger.debug('Simulation results will be saved in "%s"', simdir)
+                else:
+                    simdir = str(settings.get('General','datadir'))
+                
+                filename = forecast.key + '_yield.csv';
+                filepath = os.path.join(simdir, filename)
+                
+                # convert the index times to UNIX timestamps and print the result as csv file
+                #yieldprediction.index = yieldprediction.index.tz_convert('UTC').astype(np.int64)//10**6
+                yieldprediction.index.name = 'time'
+                yieldprediction.to_csv(filepath, sep=',', encoding='utf-8')
+                
+                logger.info('PV yield prediction successfully saved as "%s"', filename)
+        else:
+            logger.error('Parsed weather forecast "%s" was empty', forecast.key)
+
+    except IOError as e:
+        logger.error('Error while predicting energy yield: %s', e.message)
+
+
+def _optimize(times, systems, settings, weatherdir):
+    from pvprediction.emoncms import Emoncms
+    emoncms = Emoncms(settings.get("Emoncms","URL"), settings.get("Emoncms","APIkey"))
+    
+    # Parse forecasted weather data for the prior day, taking only the first 6 hours
+    # of a forecast, as inaccuracies increase with the amount of time looked into the future
+    prior = times[0:6] - datetime.timedelta(days=1)
+    forecast_prior = pv.weather.forecast(prior[0], settings.get('Location','timezone'), var=weatherdir)[0:6]
+    
+    if not forecast_prior.empty and forecast_prior.index.equals(prior):
+        logger.debug('Using prior forecast "%s.csv" to calculate prediction error', forecast_prior.key)
+    
+        for sysid, sys in systems.items():
+            logger.info('Optimizing efficiency values for system "%s"', sysid)
+            
+            # Request measured generation data from emoncms for the prior days' first 6 hours
+            # and calculate the systems effective power, to optimize against their prediction error
+            measurements = emoncms.feed('device' + sys.id.lower() + '_out_power', prior, settings.get('Location','timezone'))
+            power_eff = pv.predict.power_effective(sys,  forecast_prior.calculate(sys),  forecast_prior.temperature)*sys.modules_param['n']
+            
+            pv.predict.optimize(sys, power_eff, measurements, float(settings.get('Optimization','forgetting')))
+            
+    else:
+        logger.warn('Optimization skipped, as corresponding prior forecast for %s was not found', prior[0].strftime('%d. %b %Y'))
+
+
+def _get_parser():
+    from argparse import ArgumentParser
+    
+    parser = ArgumentParser(description=__doc__)
+    
+    parser.add_argument('-c','--config', 
+                        dest='configdir',
+                        help="Directory of system configuration files", 
+                        metavar='DIR')
+    parser.add_argument('-w','--weather', 
+                        dest='weatherdir',
+                        help="Directory of solar irradiance and temperature files", 
+                        metavar='DIR')
+    parser.add_argument('-s','--simulation', 
+                        dest='simdir',
+                        help="Directory in which simulation output files will be placed", 
+                        metavar='DIR')
+    parser.add_argument('-o','--optimize', 
+                        action="store_true", 
+                        default=False, 
+                        help='Enables efficiency optimization')
+    return parser
+
+
+if __name__ == "__main__":
+    main()
